@@ -34,6 +34,8 @@ Error: unable to determine AMI to use: error getting AMI from SSM Parameter Stor
 so I added `AmazonSSMFullAccess`, even though the [IAM Policy Simulator](https://policysim.aws.amazon.com/home/index.jsp?#)
 said I shouldn't need it.
 
+I needed to create and use an ECR repo, so I created a policy with `ecr:CreateRepository` and `ecr:PutImage` for `arn:aws:ecr:us-east-2:054858005475:repository/*` and `ecr:GetAuthorizationToken` for `*` called `ECR-create` and added it to the user. 
+
 ```console
 $ aws sts get-caller-identity
 {
@@ -160,3 +162,116 @@ mongodb-1641163726-5f47b864d5-2db5k   1/1     Running   0          2m8s
 tomcat-1641163641-74f8bd4d86-flb42    1/1     Running   0          3m34s
 ```
 
+## kube-bench
+
+Instructions at [https://github.com/aquasecurity/kube-bench/blob/main/docs/running.md#running-in-an-eks-cluster].
+
+I needed to create and use an ECR repo, so I created a policy with `ecr:CreateRepository` for `arn:aws:ecr:us-east-2:054858005475:repository/*` and `ecr:GetAuthorizationToken` for `*` called `ECR-create` and added it to the user. I also added `AmazonEC2ContainerRegistryPowerUser` so the user can push images
+
+```console
+$ aws ecr create-repository --repository-name k8s/kube-bench --image-tag-mutability MUTABLE
+{
+    "repository": {
+        "repositoryArn": "arn:aws:ecr:us-east-2:054858005475:repository/k8s/kube-bench",
+        "registryId": "054858005475",
+        "repositoryName": "k8s/kube-bench",
+        "repositoryUri": "054858005475.dkr.ecr.us-east-2.amazonaws.com/k8s/kube-bench",
+        "createdAt": "2022-01-02T18:05:49-05:00",
+        "imageTagMutability": "MUTABLE",
+        "imageScanningConfiguration": {
+            "scanOnPush": false
+        },
+        "encryptionConfiguration": {
+            "encryptionType": "AES256"
+        }
+    }
+}
+$ cd ..
+$ rm -rf kube-bench
+$ git clone https://github.com/aquasecurity/kube-bench.git
+$ cd kube-bench
+$ aws ecr get-login-password --region us-east-2 | docker login --username AWS --password-stdin 054858005475.dkr.ecr.us-east-2.amazonaws.com
+Login Succeeded
+$ docker build -t k8s/kube-bench .
+[+] Building 68.6s (29/29) FINISHED
+...
+$ docker tag k8s/kube-bench:latest 054858005475.dkr.ecr.us-east-2.amazonaws.com/k8s/kube-bench:latest
+$ docker push 054858005475.dkr.ecr.us-east-2.amazonaws.com/k8s/kube-bench:latest
+The push refers to repository [054858005475.dkr.ecr.us-east-2.amazonaws.com/k8s/kube-bench]
+...
+latest: digest: sha256:18777462bf3d8d85b7d8acb15cf5e65877f00c6ed946e9f098caa5cf20cbe057 size: 2832
+```
+
+In `job-eks.yaml`, add `054858005475.dkr.ecr.us-east-2.amazonaws.com/k8s/kube-bench:latest` as `image` in line 14.
+
+```console
+$ kubectl apply -f job-eks.yaml
+job.batch/kube-bench created
+$ kubectl get pods
+NAME                                  READY   STATUS      RESTARTS   AGE
+kube-bench-x7vgh                      0/1     Completed   0          7s
+mongodb-1641163726-5f47b864d5-2db5k   1/1     Running     0          40m
+tomcat-1641163641-74f8bd4d86-flb42    1/1     Running     0          41m
+$ kubectl logs kube-bench-x7vgh
+[INFO] 3 Worker Node Security Configuration
+[INFO] 3.1 Worker Node Configuration Files
+[PASS] 3.1.1 Ensure that the kubeconfig file permissions are set to 644 or more restrictive (Manual)
+[PASS] 3.1.2 Ensure that the kubelet kubeconfig file ownership is set to root:root (Manual)
+[PASS] 3.1.3 Ensure that the kubelet configuration file has permissions set to 644 or more restrictive (Manual)
+[PASS] 3.1.4 Ensure that the kubelet configuration file ownership is set to root:root (Manual)
+[INFO] 3.2 Kubelet
+[PASS] 3.2.1 Ensure that the --anonymous-auth argument is set to false (Automated)
+[PASS] 3.2.2 Ensure that the --authorization-mode argument is not set to AlwaysAllow (Automated)
+[PASS] 3.2.3 Ensure that the --client-ca-file argument is set as appropriate (Manual)
+[PASS] 3.2.4 Ensure that the --read-only-port argument is set to 0 (Manual)
+[PASS] 3.2.5 Ensure that the --streaming-connection-idle-timeout argument is not set to 0 (Manual)
+[PASS] 3.2.6 Ensure that the --protect-kernel-defaults argument is set to true (Automated)
+[PASS] 3.2.7 Ensure that the --make-iptables-util-chains argument is set to true (Automated)
+[PASS] 3.2.8 Ensure that the --hostname-override argument is not set (Manual)
+[WARN] 3.2.9 Ensure that the --eventRecordQPS argument is set to 0 or a level which ensures appropriate event capture (Automated)
+[PASS] 3.2.10 Ensure that the --rotate-certificates argument is not set to false (Manual)
+[PASS] 3.2.11 Ensure that the RotateKubeletServerCertificate argument is set to true (Manual)
+
+== Remediations node ==
+3.2.9 If using a Kubelet config file, edit the file to set eventRecordQPS: to an appropriate level.
+If using command line arguments, edit the kubelet service file
+/etc/systemd/system/kubelet.service on each worker node and
+set the below parameter in KUBELET_SYSTEM_PODS_ARGS variable.
+Based on your system, restart the kubelet service. For example:
+systemctl daemon-reload
+systemctl restart kubelet.service
+
+
+== Summary node ==
+14 checks PASS
+0 checks FAIL
+1 checks WARN
+0 checks INFO
+
+== Summary total ==
+14 checks PASS
+0 checks FAIL
+1 checks WARN
+0 checks INFO
+```
+
+## kube-hunter
+
+Sign up at [https://kube-hunter.aquasec.com/].
+
+Copy the `docker run` command and run it.
+
+```console
+$ docker run -it --rm --network host aquasec/kube-hunter:aqua --token ...
+Choose one of the options below:
+1. Remote scanning      (scans one or more specific IPs or DNS names)
+2. Interface scanning   (scans subnets on all local network interfaces)
+3. IP range scanning    (scans a given IP range)
+Remotes (separated by a ','): 192.168.25.109,192.168.38.129
+2022-01-02 23:37:05,304 INFO kube_hunter.modules.report.collector Started hunting
+
+Report will be available at:
+...
+```
+
+Since we are behind a Wireguard VPN, it can find the cluster at all. That is good.
