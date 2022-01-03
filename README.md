@@ -162,6 +162,57 @@ mongodb-1641163726-5f47b864d5-2db5k   1/1     Running   0          2m8s
 tomcat-1641163641-74f8bd4d86-flb42    1/1     Running   0          3m34s
 ```
 
+### Add Prometheus
+
+Add Prometheus, just because it is a good idea.
+
+```console
+$ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+"prometheus-community" has been added to your repositories
+$ helm install prometheus prometheus-community/prometheus --namespace prometheus --create-namespace
+NAME: prometheus
+LAST DEPLOYED: Mon Jan  3 10:29:02 2022
+NAMESPACE: prometheus
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+The Prometheus server can be accessed via port 80 on the following DNS name from within your cluster:
+prometheus-server.prometheus.svc.cluster.local
+
+
+Get the Prometheus server URL by running these commands in the same shell:
+  export POD_NAME=$(kubectl get pods --namespace prometheus -l "app=prometheus,component=server" -o jsonpath="{.items[0].metadata.name}")
+  kubectl --namespace prometheus port-forward $POD_NAME 9090
+
+
+The Prometheus alertmanager can be accessed via port 80 on the following DNS name from within your cluster:
+prometheus-alertmanager.prometheus.svc.cluster.local
+
+
+Get the Alertmanager URL by running these commands in the same shell:
+  export POD_NAME=$(kubectl get pods --namespace prometheus -l "app=prometheus,component=alertmanager" -o jsonpath="{.items[0].metadata.name}")
+  kubectl --namespace prometheus port-forward $POD_NAME 9093
+#################################################################################
+######   WARNING: Pod Security Policy has been moved to a global property.  #####
+######            use .Values.podSecurityPolicy.enabled with pod-based      #####
+######            annotations                                               #####
+######            (e.g. .Values.nodeExporter.podSecurityPolicy.annotations) #####
+#################################################################################
+
+
+The Prometheus PushGateway can be accessed via port 9091 on the following DNS name from within your cluster:
+prometheus-pushgateway.prometheus.svc.cluster.local
+
+
+Get the PushGateway URL by running these commands in the same shell:
+  export POD_NAME=$(kubectl get pods --namespace prometheus -l "app=prometheus,component=pushgateway" -o jsonpath="{.items[0].metadata.name}")
+  kubectl --namespace prometheus port-forward $POD_NAME 9091
+
+For more information on running Prometheus, visit:
+https://prometheus.io/
+```
+
 ## kube-bench
 
 Instructions at (https://github.com/aquasecurity/kube-bench/blob/main/docs/running.md#running-in-an-eks-cluster).
@@ -528,10 +579,10 @@ Since I am using EKS, I can't install Falco on the system, so I'll put it in Kub
 ```console
 $ helm repo add falcosecurity https://falcosecurity.github.io/chart
 ...
-$ helm install falco falcosecurity/falco
+$ helm install falco falcosecurity/falco --namespace falco --create-namespace
 NAME: falco
-LAST DEPLOYED: Mon Jan  3 10:04:02 2022
-NAMESPACE: default
+LAST DEPLOYED: Mon Jan  3 10:33:38 2022
+NAMESPACE: falco
 STATUS: deployed
 REVISION: 1
 TEST SUITE: None
@@ -549,22 +600,19 @@ You can easily forward Falco events to Slack, Kafka, AWS Lambda and more with fa
 Full list of outputs: https://github.com/falcosecurity/charts/falcosidekick.
 You can enable its deployment with `--set falcosidekick.enabled=true` or in your values.yaml.
 See: https://github.com/falcosecurity/charts/blob/master/falcosidekick/values.yaml for configuration values.
-$ kubectl get pods
+$ kubectl get pods -n falco
 NAME                                  READY   STATUS      RESTARTS   AGE
 falco-5sfhh                           1/1     Running     0          5m46s
 falco-fxnjv                           1/1     Running     0          5m46s
-kube-bench-x7vgh                      0/1     Completed   0          15h
-mongodb-1641163726-5f47b864d5-2db5k   1/1     Running     0          16h
-tomcat-1641163641-74f8bd4d86-flb42    1/1     Running     0          16h
 ```
 
 Look at the logs in either of the pods to see the per node findings.
 
 ```console
-$ kubectl describe pods falco-5sfhh | grep '^Node:'
+$ kubectl describe pods falco-5sfhh -n falco | grep '^Node:'
 Node:         ip-192-168-38-129.us-east-2.compute.internal/192.168.38.129
-$ kubectl describe pods falco-fxnjv  | grep '^Node:'
+$ kubectl describe pods falco-fxnjv -n falco | grep '^Node:'
 Node:         ip-192-168-25-109.us-east-2.compute.internal/192.168.25.109
-$ kubectl logs falco-5sfhh
+$ kubectl logs falco-5sfhh -n falco
 ...
 ```
