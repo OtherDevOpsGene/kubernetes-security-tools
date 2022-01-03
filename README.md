@@ -618,3 +618,72 @@ Node:         ip-192-168-25-109.us-east-2.compute.internal/192.168.25.109
 $ kubectl logs falco-5sfhh -n falco
 ...
 ```
+
+
+## Clean up
+
+Delete the entire cluster when you are done. Instructions at <https://docs.aws.amazon.com/eks/latest/userguide/delete-cluster.html>.
+
+Find any service with an EXTERNAL-IP and delte it first.
+
+```console
+$ kubectl get svc --all-namespaces
+NAMESPACE      NAME                            TYPE           CLUSTER-IP       EXTERNAL-IP                                                               PORT(S)
+AGE
+cert-manager   cert-manager                    ClusterIP      10.100.235.179   <none>                                                                    9402/TCP        13h
+cert-manager   cert-manager-webhook            ClusterIP      10.100.236.83    <none>                                                                    443/TCP
+13h
+default        kubernetes                      ClusterIP      10.100.0.1       <none>                                                                    443/TCP
+17h
+default        mongodb-1641163726              ClusterIP      10.100.248.29    <none>                                                                    27017/TCP       16h
+default        tomcat-1641163641               LoadBalancer   10.100.171.208   a97296031375b437db510f34a6a8bb2a-1110097583.us-east-2.elb.amazonaws.com   80:30294/TCP    16h
+goldilocks     goldilocks-dashboard            ClusterIP      10.100.241.236   <none>                                                                    80/TCP
+96m
+kube-system    kube-dns                        ClusterIP      10.100.0.10      <none>                                                                    53/UDP,53/TCP   17h
+kube-system    metrics-server                  ClusterIP      10.100.165.21    <none>                                                                    443/TCP
+12h
+prometheus     prometheus-alertmanager         ClusterIP      10.100.172.227   <none>                                                                    80/TCP
+14m
+prometheus     prometheus-kube-state-metrics   ClusterIP      10.100.187.110   <none>                                                                    8080/TCP        14m
+prometheus     prometheus-node-exporter        ClusterIP      None             <none>                                                                    9100/TCP        14m
+prometheus     prometheus-pushgateway          ClusterIP      10.100.247.124   <none>                                                                    9091/TCP        14m
+prometheus     prometheus-server               ClusterIP      10.100.109.109   <none>                                                                    80/TCP
+14m
+$ kubectl delete svc tomcat-1641163641
+service "tomcat-1641163641" deleted
+```
+
+Then delete the cluster. It should take 4-5 minutes.
+
+```console
+$ eksctl delete cluster --name codemash
+2022-01-03 10:46:38 [ℹ]  eksctl version 0.77.0
+2022-01-03 10:46:38 [ℹ]  using region us-east-2
+2022-01-03 10:46:38 [ℹ]  deleting EKS cluster "codemash"
+2022-01-03 10:46:38 [ℹ]  will drain 0 unmanaged nodegroup(s) in cluster "codemash"
+2022-01-03 10:46:39 [ℹ]  deleted 0 Fargate profile(s)
+2022-01-03 10:46:39 [✔]  kubeconfig has been updated
+2022-01-03 10:46:39 [ℹ]  cleaning up AWS load balancers created by Kubernetes objects of Kind Service or Ingress
+2022-01-03 10:46:41 [ℹ]
+2 sequential tasks: { delete nodegroup "codemash-ng-1", delete cluster control plane "codemash" [async]
+}
+2022-01-03 10:46:41 [ℹ]  will delete stack "eksctl-codemash-nodegroup-codemash-ng-1"
+2022-01-03 10:46:41 [ℹ]  waiting for stack "eksctl-codemash-nodegroup-codemash-ng-1" to get deleted
+2022-01-03 10:46:41 [ℹ]  waiting for CloudFormation stack "eksctl-codemash-nodegroup-codemash-ng-1"
+2022-01-03 10:46:41 [!]  retryable error (Throttling: Rate exceeded
+        status code: 400, request id: 31f1cfb5-7ee3-4a6e-87ba-fee69588e700) from cloudformation/DescribeStacks - will retry after delay of 6.598365391s
+2022-01-03 10:47:04 [ℹ]  waiting for CloudFormation stack "eksctl-codemash-nodegroup-codemash-ng-1"
+2022-01-03 10:47:21 [ℹ]  waiting for CloudFormation stack "eksctl-codemash-nodegroup-codemash-ng-1"
+2022-01-03 10:47:41 [ℹ]  waiting for CloudFormation stack "eksctl-codemash-nodegroup-codemash-ng-1"
+2022-01-03 10:47:58 [ℹ]  waiting for CloudFormation stack "eksctl-codemash-nodegroup-codemash-ng-1"
+2022-01-03 10:48:18 [ℹ]  waiting for CloudFormation stack "eksctl-codemash-nodegroup-codemash-ng-1"
+2022-01-03 10:48:37 [ℹ]  waiting for CloudFormation stack "eksctl-codemash-nodegroup-codemash-ng-1"
+2022-01-03 10:48:56 [ℹ]  waiting for CloudFormation stack "eksctl-codemash-nodegroup-codemash-ng-1"
+2022-01-03 10:49:13 [ℹ]  waiting for CloudFormation stack "eksctl-codemash-nodegroup-codemash-ng-1"
+2022-01-03 10:49:31 [ℹ]  waiting for CloudFormation stack "eksctl-codemash-nodegroup-codemash-ng-1"
+2022-01-03 10:49:48 [ℹ]  waiting for CloudFormation stack "eksctl-codemash-nodegroup-codemash-ng-1"
+2022-01-03 10:50:04 [ℹ]  waiting for CloudFormation stack "eksctl-codemash-nodegroup-codemash-ng-1"
+2022-01-03 10:50:23 [ℹ]  waiting for CloudFormation stack "eksctl-codemash-nodegroup-codemash-ng-1"
+2022-01-03 10:50:23 [ℹ]  will delete stack "eksctl-codemash-cluster"
+2022-01-03 10:50:23 [✔]  all cluster resources were deleted
+```
