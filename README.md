@@ -520,3 +520,51 @@ $ kubectl -n goldilocks port-forward svc/goldilocks-dashboard 8444:80
 ```
 
 The Goldilocks dashboard will be on (http://localhost:8444/).
+
+## Falco
+
+Since I am using EKS, I can't install Falco on the system, so I'll put it in Kubernetes. The Helm chart is at (https://github.com/falcosecurity/charts/tree/master/falco)
+
+```console
+$ helm repo add falcosecurity https://falcosecurity.github.io/chart
+...
+$ helm install falco falcosecurity/falco
+NAME: falco
+LAST DEPLOYED: Mon Jan  3 10:04:02 2022
+NAMESPACE: default
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+Falco agents are spinning up on each node in your cluster. After a few
+seconds, they are going to start monitoring your containers looking for
+security issues.
+
+
+No further action should be required.
+
+
+Tip:
+You can easily forward Falco events to Slack, Kafka, AWS Lambda and more with falcosidekick.
+Full list of outputs: https://github.com/falcosecurity/charts/falcosidekick.
+You can enable its deployment with `--set falcosidekick.enabled=true` or in your values.yaml.
+See: https://github.com/falcosecurity/charts/blob/master/falcosidekick/values.yaml for configuration values.
+$ kubectl get pods
+NAME                                  READY   STATUS      RESTARTS   AGE
+falco-5sfhh                           1/1     Running     0          5m46s
+falco-fxnjv                           1/1     Running     0          5m46s
+kube-bench-x7vgh                      0/1     Completed   0          15h
+mongodb-1641163726-5f47b864d5-2db5k   1/1     Running     0          16h
+tomcat-1641163641-74f8bd4d86-flb42    1/1     Running     0          16h
+```
+
+Look at the logs in either of the pods to see the per node findings.
+
+```console
+$ kubectl describe pods falco-5sfhh | grep '^Node:'
+Node:         ip-192-168-38-129.us-east-2.compute.internal/192.168.38.129
+$ kubectl describe pods falco-fxnjv  | grep '^Node:'
+Node:         ip-192-168-25-109.us-east-2.compute.internal/192.168.25.109
+$ kubectl logs falco-5sfhh
+...
+```
