@@ -164,7 +164,7 @@ tomcat-1641163641-74f8bd4d86-flb42    1/1     Running   0          3m34s
 
 ## kube-bench
 
-Instructions at [https://github.com/aquasecurity/kube-bench/blob/main/docs/running.md#running-in-an-eks-cluster].
+Instructions at (https://github.com/aquasecurity/kube-bench/blob/main/docs/running.md#running-in-an-eks-cluster).
 
 I needed to create and use an ECR repo, so I created a policy with `ecr:CreateRepository` for `arn:aws:ecr:us-east-2:054858005475:repository/*` and `ecr:GetAuthorizationToken` for `*` called `ECR-create` and added it to the user. I also added `AmazonEC2ContainerRegistryPowerUser` so the user can push images
 
@@ -257,7 +257,7 @@ systemctl restart kubelet.service
 
 ## kube-hunter
 
-Sign up at [https://kube-hunter.aquasec.com/].
+Sign up at (https://kube-hunter.aquasec.com/).
 
 Copy the `docker run` command and run it.
 
@@ -300,6 +300,8 @@ $ curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/in
 The vulnerability data is downloaded/updated on scan, if needed.
 
 ```console
+$ trivy image docker.io/bitnami/mongodb:4.4.11-debian-10-r0
+$ trivy image docker.io/bitnami/tomcat:10.0.14-debian-10-r21
 $ trivy image webgoat/webgoat-7.1
 2022-01-02T18:49:53.617-0500    INFO    Need to update DB
 2022-01-02T18:49:53.617-0500    INFO    Downloading DB...
@@ -317,7 +319,7 @@ Total: 890 (UNKNOWN: 23, LOW: 264, MEDIUM: 241, HIGH: 256, CRITICAL: 106)
 ...
 ```
 
-Pulled [https://github.com/aquasecurity/trivy/blob/main/contrib/html.tpl] as `trivy-html.tpl`.
+Pulled (https://github.com/aquasecurity/trivy/blob/main/contrib/html.tpl) as `trivy-html.tpl`.
 
 ```console
 $ trivy image --format template --template "@trivy-html.tpl" -o webgoat-trivy-report.html webgoat/webgoat-8.0
@@ -329,4 +331,122 @@ $ trivy image --format template --template "@trivy-html.tpl" -o webgoat-trivy-re
 
 Results in `webgoat-trivy-report.html`. Search for `CVE-2021-44228` == log4shell.
 
+## Polaris
 
+### Dashboard
+
+Instructions at (https://polaris.docs.fairwinds.com/dashboard/#installation).
+
+```console
+$ kubectl apply -f https://github.com/fairwindsops/polaris/releases/latest/download/dashboard.yaml
+namespace/polaris created
+serviceaccount/polaris created
+clusterrole.rbac.authorization.k8s.io/polaris created
+clusterrolebinding.rbac.authorization.k8s.io/polaris-view created
+clusterrolebinding.rbac.authorization.k8s.io/polaris created
+service/polaris-dashboard created
+deployment.apps/polaris-dashboard created
+$ kubectl port-forward --namespace polaris svc/polaris-dashboard 8555:80
+```
+
+Report will be at (https://localhost:8555). Note the memory/CPU requests/limits (foreshadowing).
+
+
+### Admission controller
+
+Instructions at (https://polaris.docs.fairwinds.com/admission-controller/#installation).
+
+Install cert-manager (https://cert-manager.io/docs/installation/).
+
+```console
+$ kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.yaml
+```
+
+Download the `webhook.yaml` and edit the `apiVersion`s:
+```diff
+176c176
+< apiVersion: cert-manager.io/v1alpha2
+---
+> apiVersion: cert-manager.io/v1
+196c196
+< apiVersion: cert-manager.io/v1alpha2
+---
+> apiVersion: cert-manager.io/v1
+205c205
+< apiVersion: admissionregistration.k8s.io/v1beta1
+---
+> apiVersion: admissionregistration.k8s.io/v1
+213c213
+<   - v1beta1
+---
+>   - v1
+```
+
+Add and delete WebGoat to show it works:
+
+```console
+$ kubectl run webgoat --image webgoat/webgoat-7.1
+pod/webgoat created
+$ kubectl delete pod webgoat
+pod "webgoat" deleted
+```
+
+Install the admission controller:
+
+```
+$ kubectl apply -f webhook.yaml
+namespace/polaris created
+serviceaccount/polaris created
+clusterrole.rbac.authorization.k8s.io/polaris created
+clusterrolebinding.rbac.authorization.k8s.io/polaris-view created
+clusterrolebinding.rbac.authorization.k8s.io/polaris created
+service/polaris-webhook created
+deployment.apps/polaris-webhook created
+certificate.cert-manager.io/polaris-cert created
+issuer.cert-manager.io/polaris-selfsigned created
+validatingwebhookconfiguration.admissionregistration.k8s.io/polaris-webhook created
+```
+
+After 10 seconds or so, try to add WebGoat again:
+
+```console
+$ kubectl run webgoat --image webgoat/webgoat-7.1
+Error from server (
+Polaris prevented this deployment due to configuration problems:
+- Container webgoat: Privilege escalation should not be allowed
+- Container webgoat: Image tag should be specified
+): admission webhook "polaris.fairwinds.com" denied the request:
+Polaris prevented this deployment due to configuration problems:
+- Container webgoat: Privilege escalation should not be allowed
+- Container webgoat: Image tag should be specified
+```
+
+### Static analysis
+
+Instructions at (https://polaris.docs.fairwinds.com/infrastructure-as-code/#install-the-cli).
+
+Download (https://github.com/FairwindsOps/polaris/releases/download/4.2.0/polaris_linux_amd64.tar.gz), unpack, and copy to `/usr/local/bin`.
+
+```console
+$ wget https://github.com/FairwindsOps/polaris/releases/download/4.2.0/polaris_linux_amd64.tar.gz
+...
+2022-01-02 21:37:39 (11.0 MB/s) - ‘polaris_linux_amd64.tar.gz’ saved [11541484/11541484]
+
+$ gzip -dc polaris_linux_amd64.tar.gz | tar xvf - polaris
+polaris
+$ sudo mv polaris /usr/local/bin/
+$ polaris version
+Polaris version:4.2.0
+```
+
+Scan `deptrack` again:
+
+```console
+$ cd ../deptrack/
+$ polaris audit --audit-path .
+...
+$ polaris audit --audit-path . --format=pretty
+...
+$ polaris audit --audit-path . --format=pretty --only-show-failed-tests true
+...
+```
