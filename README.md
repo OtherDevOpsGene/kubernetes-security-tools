@@ -2,6 +2,8 @@
 
 Notes for doing the demos for "Keeping your Kubernetes Cluster Secure".
 
+**Caveat Emptor**: These are just my notes. They may be incomplete, misleading, or outright wrong. 
+
 ## Set up a target cluster
 
 ### Update eksctl
@@ -164,7 +166,7 @@ tomcat-1641163641-74f8bd4d86-flb42    1/1     Running   0          3m34s
 
 ### Add Prometheus
 
-Add Prometheus, just because it is a good idea.
+Add Prometheus, just because it is a good idea. Installation instructions at (https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus).
 
 ```console
 $ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
