@@ -450,3 +450,73 @@ $ polaris audit --audit-path . --format=pretty
 $ polaris audit --audit-path . --format=pretty --only-show-failed-tests true
 ...
 ```
+
+## Goldilocks
+
+Instructions at (https://goldilocks.docs.fairwinds.com/installation/#requirements). The Polaris admission controller must not be installed before installing metrics-server since it will block for privilege escalation.
+
+Install [metrics-server](https://github.com/kubernetes-sigs/metrics-server).
+
+```console
+$ kubectl delete -f webhook.yaml
+...
+$ kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+...
+```
+
+Install VPA and Goldilocks:
+
+```console
+$ helm repo add fairwinds-stable https://charts.fairwinds.com/stable
+"fairwinds-stable" already exists with the same configuration, skipping
+$ helm install vpa fairwinds-stable/vpa --namespace vpa --create-namespace
+NAME: vpa
+LAST DEPLOYED: Mon Jan  3 09:06:07 2022
+NAMESPACE: vpa
+STATUS: deployed
+REVISION: 1
+NOTES:
+Congratulations on installing the Vertical Pod Autoscaler!
+
+Components Installed:
+  - recommender
+  - updater
+
+To verify functionality, you can try running 'helm -n vpa test vpa'
+$ helm -n vpa test vpa
+NAME: vpa
+LAST DEPLOYED: Mon Jan  3 09:06:07 2022
+NAMESPACE: vpa
+STATUS: deployed
+REVISION: 1
+...
+Congratulations on installing the Vertical Pod Autoscaler!
+
+Components Installed:
+  - recommender
+  - updater
+
+To verify functionality, you can try running 'helm -n vpa test vpa'
+$ helm install goldilocks --namespace goldilocks fairwinds-stable/goldilocks --create-namespace
+NAME: goldilocks
+LAST DEPLOYED: Mon Jan  3 09:06:54 2022
+NAMESPACE: goldilocks
+STATUS: deployed
+REVISION: 1
+TEST SUITE: None
+NOTES:
+1. Get the application URL by running these commands:
+  export POD_NAME=$(kubectl get pods --namespace goldilocks -l "app.kubernetes.io/name=goldilocks,app.kubernetes.io/instance=goldilocks,app.kubernetes.io/component=dashboard" -o jsonpath="{.items[0].metadata.name}")
+  echo "Visit http://127.0.0.1:8080 to use your application"
+  kubectl port-forward $POD_NAME 8080:80
+```
+
+Enable Goldilocks in each namespace you want to monitor.
+
+```console
+$ kubectl label pods ns goldilocks goldilocks.fairwinds.com/enabled=true
+$ kubectl label pods ns default goldilocks.fairwinds.com/enabled=true
+$ kubectl -n goldilocks port-forward svc/goldilocks-dashboard 8444:80
+```
+
+The Goldilocks dashboard will be on (http://localhost:8444/).
