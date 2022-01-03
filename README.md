@@ -2,7 +2,7 @@
 
 Notes for doing the demos for "Keeping your Kubernetes Cluster Secure".
 
-**Caveat Emptor**: These are just my notes. They may be incomplete, misleading, or outright wrong. 
+**Caveat Emptor**: These are just my notes. They may be incomplete, misleading, or outright wrong.
 
 ## Set up a target cluster
 
@@ -36,7 +36,7 @@ Error: unable to determine AMI to use: error getting AMI from SSM Parameter Stor
 so I added `AmazonSSMFullAccess`, even though the [IAM Policy Simulator](https://policysim.aws.amazon.com/home/index.jsp?#)
 said I shouldn't need it.
 
-I needed to create and use an ECR repo, so I created a policy with `ecr:CreateRepository` and `ecr:PutImage` for `arn:aws:ecr:us-east-2:054858005475:repository/*` and `ecr:GetAuthorizationToken` for `*` called `ECR-create` and added it to the user. 
+I needed to create and use an ECR repo, so I created a policy with `ecr:CreateRepository` and `ecr:PutImage` for `arn:aws:ecr:us-east-2:054858005475:repository/*` and `ecr:GetAuthorizationToken` for `*` called `ECR-create` and added it to the user.
 
 ```console
 $ aws sts get-caller-identity
@@ -329,7 +329,6 @@ Report will be available at:
 
 Since we are behind a Wireguard VPN, it can find the cluster at all. That is good.
 
-
 ## Checkov
 
 ```console
@@ -344,7 +343,7 @@ $ checkov -d .
 
 ## Trivy
 
-Install with: 
+Install with:
 
 ```console
 $ curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.22.0
@@ -404,7 +403,6 @@ $ kubectl port-forward --namespace polaris svc/polaris-dashboard 8555:80
 
 Report will be at <https://localhost:8555>. Note the memory/CPU requests/limits (foreshadowing).
 
-
 ### Admission controller
 
 Instructions at <https://polaris.docs.fairwinds.com/admission-controller/#installation>.
@@ -416,6 +414,7 @@ $ kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1
 ```
 
 Download the `webhook.yaml` and edit the `apiVersion`s:
+
 ```diff
 176c176
 < apiVersion: cert-manager.io/v1alpha2
@@ -618,7 +617,6 @@ Node:         ip-192-168-25-109.us-east-2.compute.internal/192.168.25.109
 $ kubectl logs falco-5sfhh -n falco
 ...
 ```
-
 
 ## Clean up
 
