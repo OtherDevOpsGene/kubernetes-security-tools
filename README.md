@@ -166,7 +166,7 @@ tomcat-1641163641-74f8bd4d86-flb42    1/1     Running   0          3m34s
 
 ### Add Prometheus
 
-Add Prometheus, just because it is a good idea. Installation instructions at (https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus).
+Add Prometheus, just because it is a good idea. Installation instructions at <https://github.com/prometheus-community/helm-charts/tree/main/charts/prometheus>.
 
 ```console
 $ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
@@ -217,7 +217,7 @@ https://prometheus.io/
 
 ## kube-bench
 
-Instructions at (https://github.com/aquasecurity/kube-bench/blob/main/docs/running.md#running-in-an-eks-cluster).
+Instructions at <https://github.com/aquasecurity/kube-bench/blob/main/docs/running.md#running-in-an-eks-cluster>.
 
 I needed to create and use an ECR repo, so I created a policy with `ecr:CreateRepository` for `arn:aws:ecr:us-east-2:054858005475:repository/*` and `ecr:GetAuthorizationToken` for `*` called `ECR-create` and added it to the user. I also added `AmazonEC2ContainerRegistryPowerUser` so the user can push images
 
@@ -310,7 +310,7 @@ systemctl restart kubelet.service
 
 ## kube-hunter
 
-Sign up at (https://kube-hunter.aquasec.com/).
+Sign up at <https://kube-hunter.aquasec.com/>.
 
 Copy the `docker run` command and run it.
 
@@ -372,7 +372,7 @@ Total: 890 (UNKNOWN: 23, LOW: 264, MEDIUM: 241, HIGH: 256, CRITICAL: 106)
 ...
 ```
 
-Pulled (https://github.com/aquasecurity/trivy/blob/main/contrib/html.tpl) as `trivy-html.tpl`.
+Pulled <https://github.com/aquasecurity/trivy/blob/main/contrib/html.tpl> as `trivy-html.tpl`.
 
 ```console
 $ trivy image --format template --template "@trivy-html.tpl" -o webgoat-trivy-report.html webgoat/webgoat-8.0
@@ -388,7 +388,7 @@ Results in `webgoat-trivy-report.html`. Search for `CVE-2021-44228` == log4shell
 
 ### Dashboard
 
-Instructions at (https://polaris.docs.fairwinds.com/dashboard/#installation).
+Instructions at <https://polaris.docs.fairwinds.com/dashboard/#installation>.
 
 ```console
 $ kubectl apply -f https://github.com/fairwindsops/polaris/releases/latest/download/dashboard.yaml
@@ -402,14 +402,14 @@ deployment.apps/polaris-dashboard created
 $ kubectl port-forward --namespace polaris svc/polaris-dashboard 8555:80
 ```
 
-Report will be at (https://localhost:8555). Note the memory/CPU requests/limits (foreshadowing).
+Report will be at <https://localhost:8555>. Note the memory/CPU requests/limits (foreshadowing).
 
 
 ### Admission controller
 
-Instructions at (https://polaris.docs.fairwinds.com/admission-controller/#installation).
+Instructions at <https://polaris.docs.fairwinds.com/admission-controller/#installation>.
 
-Install cert-manager (https://cert-manager.io/docs/installation/).
+Install cert-manager <https://cert-manager.io/docs/installation/>.
 
 ```console
 $ kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.yaml
@@ -476,9 +476,9 @@ Polaris prevented this deployment due to configuration problems:
 
 ### Static analysis
 
-Instructions at (https://polaris.docs.fairwinds.com/infrastructure-as-code/#install-the-cli).
+Instructions at <https://polaris.docs.fairwinds.com/infrastructure-as-code/#install-the-cli>.
 
-Download (https://github.com/FairwindsOps/polaris/releases/download/4.2.0/polaris_linux_amd64.tar.gz), unpack, and copy to `/usr/local/bin`.
+Download <https://github.com/FairwindsOps/polaris/releases/download/4.2.0/polaris_linux_amd64.tar.gz>, unpack, and copy to `/usr/local/bin`.
 
 ```console
 $ wget https://github.com/FairwindsOps/polaris/releases/download/4.2.0/polaris_linux_amd64.tar.gz
@@ -506,7 +506,7 @@ $ polaris audit --audit-path . --format=pretty --only-show-failed-tests true
 
 ## Goldilocks
 
-Instructions at (https://goldilocks.docs.fairwinds.com/installation/#requirements). The Polaris admission controller must not be installed before installing metrics-server since it will block for privilege escalation.
+Instructions at <https://goldilocks.docs.fairwinds.com/installation/#requirements>. The Polaris admission controller must not be installed before installing metrics-server since it will block for privilege escalation.
 
 Install [metrics-server](https://github.com/kubernetes-sigs/metrics-server).
 
@@ -572,11 +572,11 @@ $ kubectl label pods ns default goldilocks.fairwinds.com/enabled=true
 $ kubectl -n goldilocks port-forward svc/goldilocks-dashboard 8444:80
 ```
 
-The Goldilocks dashboard will be on (http://localhost:8444/).
+The Goldilocks dashboard will be on <http://localhost:8444/>.
 
 ## Falco
 
-Since I am using EKS, I can't install Falco on the system, so I'll put it in Kubernetes. The Helm chart is at (https://github.com/falcosecurity/charts/tree/master/falco)
+Since I am using EKS, I can't install Falco on the system, so I'll put it in Kubernetes. The Helm chart is at <https://github.com/falcosecurity/charts/tree/master/falco>
 
 ```console
 $ helm repo add falcosecurity https://falcosecurity.github.io/chart
