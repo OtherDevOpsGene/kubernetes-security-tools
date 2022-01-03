@@ -275,3 +275,58 @@ Report will be available at:
 ```
 
 Since we are behind a Wireguard VPN, it can find the cluster at all. That is good.
+
+
+## Checkov
+
+```console
+$ pip3 install -U checkov
+$ cd ..
+$ git clone https://github.com/bitnami/bitnami-docker-mongodb.git
+$ cd bitnami-docker-mongodb/
+$ checkov -d 5.0/debian-10/
+$ cd ../deptrack/
+$ checkov -d .
+```
+
+## Trivy
+
+Install with: 
+
+```console
+$ curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.22.0
+```
+
+The vulnerability data is downloaded/updated on scan, if needed.
+
+```console
+$ trivy image webgoat/webgoat-7.1
+2022-01-02T18:49:53.617-0500    INFO    Need to update DB
+2022-01-02T18:49:53.617-0500    INFO    Downloading DB...
+25.32 MiB / 25.32 MiB [------------------------------------------------------------------------------------------------------------------------] 100.00% 10.82 MiB p/s 3s
+2022-01-02T18:50:05.347-0500    INFO    Detected OS: debian
+2022-01-02T18:50:05.347-0500    INFO    Detecting Debian vulnerabilities...
+2022-01-02T18:50:05.357-0500    INFO    Number of language-specific files: 1
+2022-01-02T18:50:05.357-0500    INFO    Detecting jar vulnerabilities...
+2022-01-02T18:50:05.360-0500    WARN    This OS version is no longer supported by the distribution: debian 8.6
+2022-01-02T18:50:05.360-0500    WARN    The vulnerability detection may be insufficient because security updates are not provided
+
+webgoat/webgoat-7.1 (debian 8.6)
+================================
+Total: 890 (UNKNOWN: 23, LOW: 264, MEDIUM: 241, HIGH: 256, CRITICAL: 106)
+...
+```
+
+Pulled [https://github.com/aquasecurity/trivy/blob/main/contrib/html.tpl] as `trivy-html.tpl`.
+
+```console
+$ trivy image --format template --template "@trivy-html.tpl" -o webgoat-trivy-report.html webgoat/webgoat-8.0
+2022-01-02T18:57:38.022-0500    INFO    Detected OS: debian
+2022-01-02T18:57:38.022-0500    INFO    Detecting Debian vulnerabilities...
+2022-01-02T18:57:38.031-0500    INFO    Number of language-specific files: 1
+2022-01-02T18:57:38.031-0500    INFO    Detecting jar vulnerabilities...
+```
+
+Results in `webgoat-trivy-report.html`. Search for `CVE-2021-44228` == log4shell.
+
+
