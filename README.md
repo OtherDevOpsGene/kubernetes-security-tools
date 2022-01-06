@@ -215,6 +215,24 @@ For more information on running Prometheus, visit:
 https://prometheus.io/
 ```
 
+### Pre-install for demos
+
+These are all listed below as well, but these steps can and should be done before the
+presentation any time a new cluster is created.
+
+```sh
+kubectl apply -f https://github.com/fairwindsops/polaris/releases/latest/download/dashboard.yaml
+kubectl port-forward --namespace polaris svc/polaris-dashboard 8555:80 &
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.yaml
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+helm install vpa fairwinds-stable/vpa --namespace vpa --create-namespace
+helm install goldilocks --namespace goldilocks fairwinds-stable/goldilocks --create-namespace
+kubectl label ns goldilocks goldilocks.fairwinds.com/enabled=true
+kubectl label ns default goldilocks.fairwinds.com/enabled=true
+kubectl -n goldilocks port-forward svc/goldilocks-dashboard 8444:80 &
+helm install falco falcosecurity/falco --namespace falco --create-namespace
+```
+
 ## kube-bench
 
 Instructions at <https://github.com/aquasecurity/kube-bench/blob/main/docs/running.md#running-in-an-eks-cluster>.
