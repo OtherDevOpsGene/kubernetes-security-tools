@@ -2,7 +2,7 @@
 
 Notes for doing the demos for "Keeping your Kubernetes Cluster Secure".
 
-**Caveat Emptor**: These are just my notes. They may be incomplete, misleading, or outright wrong.
+**Caveat Lector**: These are just my notes. They may be incomplete, misleading, or outright wrong.
 
 ## Set up a target cluster
 
@@ -233,6 +233,14 @@ kubectl -n goldilocks port-forward svc/goldilocks-dashboard 8444:80 &
 helm install falco falcosecurity/falco --namespace falco --create-namespace
 ```
 
+Open browser tabs to the following sites:
+
+* Repo: <https://github.com/OtherDevOpsGene/kubernetes-security-tools>
+* kube-hunter: <https://kube-hunter.aquasec.com>
+* Polaris: <http://localhost:8555>
+* Goldilocks: <http://localhost:8444>
+* NetworkPolicy: <https://networkpolicy.io>
+
 ## kube-bench
 
 Instructions at <https://github.com/aquasecurity/kube-bench/blob/main/docs/running.md#running-in-an-eks-cluster>.
@@ -274,6 +282,8 @@ latest: digest: sha256:18777462bf3d8d85b7d8acb15cf5e65877f00c6ed946e9f098caa5cf2
 ```
 
 In `job-eks.yaml`, add `054858005475.dkr.ecr.us-east-2.amazonaws.com/k8s/kube-bench:latest` as `image` in line 14.
+
+### Demo
 
 ```console
 $ kubectl apply -f job-eks.yaml
@@ -349,6 +359,8 @@ Since we are behind a Wireguard VPN, it can find the cluster at all. That is goo
 
 ## Checkov
 
+### Demo
+
 ```console
 $ pip3 install -U checkov
 $ cd ..
@@ -366,6 +378,8 @@ Install with:
 ```console
 $ curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sudo sh -s -- -b /usr/local/bin v0.22.0
 ```
+
+### Demo
 
 The vulnerability data is downloaded/updated on scan, if needed.
 
@@ -419,6 +433,8 @@ deployment.apps/polaris-dashboard created
 $ kubectl port-forward --namespace polaris svc/polaris-dashboard 8555:80
 ```
 
+#### Demo
+
 Report will be at <https://localhost:8555>. Note the memory/CPU requests/limits (foreshadowing).
 
 ### Admission controller
@@ -451,6 +467,8 @@ Download the `webhook.yaml` and edit the `apiVersion`s:
 ---
 >   - v1
 ```
+
+#### Demo
 
 Add and delete WebGoat to show it works:
 
@@ -508,6 +526,8 @@ $ sudo mv polaris /usr/local/bin/
 $ polaris version
 Polaris version:4.2.0
 ```
+
+#### Demo
 
 Scan `deptrack` again:
 
@@ -581,6 +601,8 @@ NOTES:
   kubectl port-forward $POD_NAME 8080:80
 ```
 
+### Demo
+
 Enable Goldilocks in each namespace you want to monitor.
 
 ```console
@@ -625,14 +647,20 @@ falco-5sfhh                           1/1     Running     0          5m46s
 falco-fxnjv                           1/1     Running     0          5m46s
 ```
 
+### Demo
+
 Look at the logs in either of the pods to see the per node findings.
 
 ```console
-$ kubectl describe pods falco-5sfhh -n falco | grep '^Node:'
+$ kubectl get pods -n falco
+NAME                                  READY   STATUS      RESTARTS   AGE
+falco-5sfhh                           1/1     Running     0          5m46s
+falco-fxnjv                           1/1     Running     0          5m46s
+$ kubectl describe pods -n falco falco-5sfhh | grep '^Node:'
 Node:         ip-192-168-38-129.us-east-2.compute.internal/192.168.38.129
-$ kubectl describe pods falco-fxnjv -n falco | grep '^Node:'
+$ kubectl describe pods -n falco falco-fxnjv | grep '^Node:'
 Node:         ip-192-168-25-109.us-east-2.compute.internal/192.168.25.109
-$ kubectl logs falco-5sfhh -n falco
+$ kubectl logs -n falco falco-5sfhh -n falco
 ...
 ```
 
