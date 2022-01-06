@@ -566,8 +566,8 @@ NOTES:
 Enable Goldilocks in each namespace you want to monitor.
 
 ```console
-$ kubectl label pods ns goldilocks goldilocks.fairwinds.com/enabled=true
-$ kubectl label pods ns default goldilocks.fairwinds.com/enabled=true
+$ kubectl label ns goldilocks goldilocks.fairwinds.com/enabled=true
+$ kubectl label ns default goldilocks.fairwinds.com/enabled=true
 $ kubectl -n goldilocks port-forward svc/goldilocks-dashboard 8444:80
 ```
 
@@ -622,7 +622,7 @@ $ kubectl logs falco-5sfhh -n falco
 
 Delete the entire cluster when you are done. Instructions at <https://docs.aws.amazon.com/eks/latest/userguide/delete-cluster.html>.
 
-Find any service with an EXTERNAL-IP and delte it first.
+Find any service with an EXTERNAL-IP and delete it first.
 
 ```console
 $ kubectl get svc --all-namespaces
