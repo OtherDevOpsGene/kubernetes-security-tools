@@ -1,5 +1,7 @@
 # kubernetes-security-tools
 
+* [Slides](https://www.slideshare.net/ggotimer/keeping-your-kubernetes-cluster-secure-250991842)
+
 Notes for doing the demos for "Keeping your Kubernetes Cluster Secure".
 
 **Caveat Lector**: These are just my notes. They may be incomplete, misleading, or outright wrong.
