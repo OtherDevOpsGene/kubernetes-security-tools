@@ -6,6 +6,19 @@ Notes for doing the demos for "Keeping your Kubernetes Cluster Secure".
 
 **Caveat Lector**: These are just my notes. They may be incomplete, misleading, or outright wrong.
 
+## Tools
+
+* [Aqua Security kube-bench](https://github.com/aquasecurity/kube-bench)
+* [Aqua Security kube-hunter](https://github.com/aquasecurity/kube-hunter)
+* [Checkov](https://github.com/bridgecrewio/checkov)
+* [Docker scan](https://docs.docker.com/engine/scan/)
+* [Aqua Security Trivy](https://github.com/aquasecurity/trivy)
+* [Fairwinds Polaris](https://github.com/fairwindsops/polaris)
+* [Fairwinds Goldilocks](https://github.com/fairwindsops/goldilocks)
+* [Network Policy Editor](https://networkpolicy.io)
+* [Cilium](https://cilium.io)
+* [Falco](https://falco.org)
+
 ## Set up a target cluster
 
 ### Update eksctl
