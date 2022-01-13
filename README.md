@@ -2,10 +2,6 @@
 
 * [Slides](https://www.slideshare.net/ggotimer/keeping-your-kubernetes-cluster-secure-250991842)
 
-Notes for doing the demos for "Keeping your Kubernetes Cluster Secure".
-
-**Caveat Lector**: These are just my notes. They may be incomplete, misleading, or outright wrong.
-
 ## Tools
 
 * [Aqua Security kube-bench](https://github.com/aquasecurity/kube-bench)
@@ -18,6 +14,10 @@ Notes for doing the demos for "Keeping your Kubernetes Cluster Secure".
 * [Network Policy Editor](https://networkpolicy.io)
 * [Cilium](https://cilium.io)
 * [Falco](https://falco.org)
+
+Notes for doing the demos for "Keeping your Kubernetes Cluster Secure".
+
+**Caveat Lector**: These are just my notes. They may be incomplete, misleading, or outright wrong.
 
 ## Set up a target cluster
 
@@ -661,6 +661,54 @@ NAME                                  READY   STATUS      RESTARTS   AGE
 falco-5sfhh                           1/1     Running     0          5m46s
 falco-fxnjv                           1/1     Running     0          5m46s
 ```
+
+When it failed during CodeMash, the Helm chart had been updated. Unfortunately, that
+failed as well. 
+
+```console
+$ helm repo update falcosecurity
+Hang tight while we grab the latest from your chart repositories...
+...Successfully got an update from the "falcosecurity" chart repository
+Update Complete. ⎈Happy Helming!⎈
+$ helm upgrade --install falco falcosecurity/falco --namespace falco --create-namespace
+...
+$ kubectl get pods -n falco
+NAME          READY   STATUS             RESTARTS   AGE
+falco-dp4bg   0/1     CrashLoopBackOff   6          6m21s
+falco-v84wb   0/1     CrashLoopBackOff   6          6m20s
+$ kubectl logs -n falco falco-dp4bg -p
+* Setting up /usr/src links from host
+* Running falco-driver-loader for: falco version=0.30.0, driver version=3aa7a83bf7b9e6229a3824e3fd1f4452d1e95cb4
+* Running falco-driver-loader with: driver=module, compile=yes, download=yes
+* Unloading falco module, if present
+* Trying to load a system falco module, if present
+* Looking for a falco module locally (kernel 5.4.162-86.275.amzn2.x86_64)
+* Trying to download a prebuilt falco module from https://download.falco.org/driver/3aa7a83bf7b9e6229a3824e3fd1f4452d1e95cb4/falco_amazonlinux2_5.4.162-86.275.amzn2.x86_64_1.ko
+curl: (22) The requested URL returned error: 404
+Unable to find a prebuilt falco module
+* Trying to dkms install falco module with GCC /usr/bin/gcc
+DIRECTIVE: MAKE="'/tmp/falco-dkms-make'"
+* Running dkms build failed, couldn't find /var/lib/dkms/falco/3aa7a83bf7b9e6229a3824e3fd1f4452d1e95cb4/build/make.log (with GCC /usr/bin/gcc)
+* Trying to dkms install falco module with GCC /usr/bin/gcc-8
+DIRECTIVE: MAKE="'/tmp/falco-dkms-make'"
+* Running dkms build failed, couldn't find /var/lib/dkms/falco/3aa7a83bf7b9e6229a3824e3fd1f4452d1e95cb4/build/make.log (with GCC /usr/bin/gcc-8)
+* Trying to dkms install falco module with GCC /usr/bin/gcc-6
+DIRECTIVE: MAKE="'/tmp/falco-dkms-make'"
+* Running dkms build failed, couldn't find /var/lib/dkms/falco/3aa7a83bf7b9e6229a3824e3fd1f4452d1e95cb4/build/make.log (with GCC /usr/bin/gcc-6)
+* Trying to dkms install falco module with GCC /usr/bin/gcc-5
+DIRECTIVE: MAKE="'/tmp/falco-dkms-make'"
+* Running dkms build failed, couldn't find /var/lib/dkms/falco/3aa7a83bf7b9e6229a3824e3fd1f4452d1e95cb4/build/make.log (with GCC /usr/bin/gcc-5)
+Consider compiling your own falco driver and loading it or getting in touch with the Falco community
+Thu Jan 13 22:32:56 2022: Falco version 0.30.0 (driver version 3aa7a83bf7b9e6229a3824e3fd1f4452d1e95cb4)
+Thu Jan 13 22:32:56 2022: Falco initialized with configuration file /etc/falco/falco.yaml
+Thu Jan 13 22:32:56 2022: Loading rules from file /etc/falco/falco_rules.yaml:
+Thu Jan 13 22:32:57 2022: Loading rules from file /etc/falco/falco_rules.local.yaml:
+Thu Jan 13 22:32:57 2022: Unable to load the driver.
+Thu Jan 13 22:32:57 2022: Runtime error: error opening device /host/dev/falco0. Make sure you have root credentials and that the falco module is loaded.. Exiting.
+```
+
+It seems that has been an issue in the past, so perhaps the helm chart just needs
+to be updated to work with the current version of EKS?
 
 ### Demo
 
